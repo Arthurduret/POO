@@ -1,3 +1,3 @@
 # Workshop
 
-Workshop 1
+Workshop POO
