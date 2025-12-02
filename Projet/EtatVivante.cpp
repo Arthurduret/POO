@@ -1,3 +1,3 @@
-#include "EtatVivant.hpp"
-#include "EtatMort.hpp" 
+#include "EtatVivante.hpp"
+#include "EtatMorte.hpp" 
 
