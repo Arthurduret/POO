@@ -1,3 +1,5 @@
 #include "EtatMorte.hpp"
-#include "EtatVivante.hpp" 
 
+bool EtatMorte::estVivante() const {
+    return false;
+}
