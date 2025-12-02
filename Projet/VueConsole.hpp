@@ -1,6 +1,6 @@
 #ifndef VUECONSOLE_H
 #define VUECONSOLE_H
-#include <ObservateurGrille.hpp>
+#include "ObservateurGrille.hpp"
 
 class VueConsole : public ObservateurGrille {
     protected :
