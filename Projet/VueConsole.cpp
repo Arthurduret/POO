@@ -3,11 +3,11 @@
 #include <Grille.hpp>
 using namespace std;
 
-VueConsole::notifierChangement(const Grille& grille){
+void VueConsole::notifierChangement(const Grille& grille){
     cout << "--- Nouvelle Génération ---" << endl;
-    for (size_t y = 0; y < grille.getHauteur(); y++) {
-        for (size_t x = 0; x < grille.getLargeur; x++) {
-            if (grille.getCellule(x, y).estVivante()) {
+    for (int y = 0; y < grille.getHauteur(); y++) {
+        for (int x = 0; x < grille.getLongueur(); x++) {
+            if (grille.getCellule(x, y)->estVivante()) {
                 cout << "■";
             }
             else {
@@ -16,6 +16,6 @@ VueConsole::notifierChangement(const Grille& grille){
         }
         cout << endl;
     }
-};
+}
 
 
