@@ -9,7 +9,7 @@ class ObservateurGrille {
     public :
         virtual ~ObservateurGrille() = default; // Destructeur
         virtual void notifierChangement(const Grille& grille) = 0; //
-}
+};
 
 
 #endif
