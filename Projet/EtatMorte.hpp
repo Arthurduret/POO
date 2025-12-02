@@ -1,5 +1,5 @@
-#ifndef ETATMORT_H
-#define ETATMORT_H
+#ifndef ETATMORTE_H
+#define ETATMORTE_H
 
 #include "EtatCellule.hpp"
 

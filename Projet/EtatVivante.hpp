@@ -1,5 +1,5 @@
-#ifndef ETATVIVANT_H
-#define ETATVIVANT_H
+#ifndef ETATVIVANTE_H
+#define ETATVIVANTE_H
 
 #include "EtatCellule.hpp"
 
