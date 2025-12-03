@@ -4,6 +4,10 @@ Cellule::~Cellule() {
     delete etat_actuel;
 }
 
+EtatCellule* Cellule::getEtat() const {
+    return etat_actuel;
+}
+
 void Cellule::setEtat(EtatCellule* new_etat) {
     delete etat_actuel;
     
