@@ -6,7 +6,7 @@ using namespace std;
 
 
 
-// --- 2. Appliquer les règles de transition ---
+
 int ReglesJeu::appliquerRegles(int etat_actuel, int voisines_vivantes) {
     if (etat_actuel == 1) { // VIVANTE
         // Survie si 2 OU 3 voisines
