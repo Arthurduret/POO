@@ -1,60 +1,53 @@
 // Grille.cpp
 
 #include "Grille.hpp"
-// L'inclusion de Cellule.h est suffisante car la Cellule gère ses dépendances (EtatVivant.h)
+#include "EtatVivante.hpp" 
+#include "EtatMorte.hpp"   
+#include <iostream>
+#include <stdexcept>
+#include <utility> // Pour std::move, mais non requis avec make_unique
 
-// Implémentation du Constructeur (Note : allocation de la matrice faite dans init ou dans le constructeur)
-// Pour la simplicité, nous allons laisser l'allocation de Cellule*** dans init() et le constructeur initialise les dimensions.
-Grille::Grille(int longueur, int hauteur) : longueur(longueur), hauteur(hauteur), cellules(nullptr) {}
-// Remarque : Dans le code initial, vous allociez dans init(). Nous respectons cette structure.
-
-// Implémentation du Destructeur
-Grille::~Grille() {
-    if (cellules) { // Vérifie si la mémoire a été allouée (si init() a été appelée)
-        for (int y = 0; y < hauteur; ++y) {
-            for (int x = 0; x < longueur; ++x) {
-                delete cellules[y][x]; // Supprime chaque objet Cellule
-            }
-            delete[] cellules[y]; // Supprime le tableau de pointeurs de Cellule pour cette ligne
-        }
-        delete[] cellules; // Supprime le tableau principal de pointeurs
-    }
+// Implémentation du Constructeur
+Grille::Grille(int longueur, int hauteur) 
+    : longueur(longueur), hauteur(hauteur) 
+{
+    // Rien à faire ici, les membres sont initialisés.
 }
 
 // Implémentation de l'Initialisation (Allocation et Création des Cellules)
-void Grille::init(const std::vector<std::vector<int>>& donnees) {
-    // Si la grille est déjà allouée, on ne fait rien (ou on la supprime d'abord, ici simplification)
+void Grille::init(const GridData& donnees) {
+    if (donnees.empty() || donnees[0].empty()) {
+        throw std::invalid_argument("La configuration initiale est vide.");
+    }
     
-    cellules = new Cellule**[hauteur];
+    int dataHauteur = donnees.size();
+    int dataLongueur = donnees[0].size();
+    
+    if (dataHauteur != hauteur || dataLongueur != longueur) {
+        throw std::invalid_argument("Dimensions de la configuration initiale incompatibles.");
+    }
+
+    // Réinitialisation de la grille vectorielle
+    cellules.clear();
+    cellules.resize(hauteur);
+    
     for (int y = 0; y < hauteur; ++y) {
-        cellules[y] = new Cellule*[longueur];
+        cellules[y].reserve(longueur);
         for (int x = 0; x < longueur; ++x) {
             
-            // Le choix de l'état initial nécessite de connaître les singletons
-            // On le fait via l'inclusion d'EtatVivant/Mort.h dans les autres fichiers
+            // On utilise les Singletons pour l'état initial (1 = Vivant, 0 = Mort)
+            EtatCellule* etatInitial = (donnees[y][x] == 1) 
+                                       ? EtatVivante::getInstance() 
+                                       : EtatMorte::getInstance();
             
-            // ... (logique pour déterminer etatInitial) ...
-            // Nous aurons besoin d'inclure EtatVivant/Mort.h si cette logique était ici.
-            // Pour la compilation, nous simplifions en supposant que l'état initial vient d'ailleurs.
-            // Dans le fichier unique, cette logique était :
-            // EtatCellule* etatInitial = (donnees[y][x] == 1) ? EtatVivant::getInstance() : EtatMort::getInstance();
-            
-            // Pour l'instant, nous mettons un état par défaut pour la compilation
-            // Supposons que l'initialisation complète est faite ailleurs ou que nous incluons les en-têtes nécessaires.
-
-            // Simplification : on doit inclure les en-têtes des Singletons pour init()
-
-            // NOTE: Pour que ce .cpp compile, nous avons besoin de #include "EtatVivant.h" et "EtatMort.h"
-            // Le .h de la Grille ne doit pas les inclure, mais le .cpp le doit !
-            
-            // *** Pour l'exemple, nous omettons le corps de init() pour éviter une chaîne d'inclusion ici, 
-            // mais gardons les autres méthodes ***
+            // Création de Cellule via make_unique et insertion dans le vecteur
+            cellules[y].push_back(std::make_unique<Cellule>(etatInitial));
         }
     }
 }
 
 
-// Implémentation de la logique spatiale
+// Implémentation de la logique spatiale (Calcul des voisins, identique)
 int Grille::getVoisinsVivants(int x, int y) const {
     int voisinsVivants = 0;
     for (int i = -1; i <= 1; ++i) { 
@@ -67,8 +60,9 @@ int Grille::getVoisinsVivants(int x, int y) const {
             if (voisinX >= 0 && voisinX < longueur && 
                 voisinY >= 0 && voisinY < hauteur) 
             {
-                // Note : getCellule(voisinX, voisinY) est mieux que cellules[voisinY][voisinX]
-                if (getCellule(voisinX, voisinY)->estVivant()) { 
+                Cellule* voisin = getCellule(voisinX, voisinY);
+                // Utilisation du proxy estVivant()
+                if (voisin && voisin->estVivant()) { 
                     voisinsVivants++;
                 }
             }
@@ -77,37 +71,53 @@ int Grille::getVoisinsVivants(int x, int y) const {
     return voisinsVivants;
 }
 
-// Implémentation de la logique temporelle
+// Implémentation de la logique temporelle (Application du Patron State)
 void Grille::evoluer() {
-    // La logique des deux passes est trop complexe pour être recopiée ici sans les en-têtes des Singletons et <vector>
-    // Dans le fichier unique, cette logique était :
-    /*
-    std::vector<std::vector<EtatCellule*>> futursEtats(hauteur, std::vector<EtatCellule*>(longueur));
     // PREMIÈRE PASSE : Calcul des états futurs
+    // On stocke temporairement les pointeurs des Singletons des états futurs
+    std::vector<std::vector<EtatCellule*>> futursEtats(hauteur, std::vector<EtatCellule*>(longueur));
+    
     for (int y = 0; y < hauteur; ++y) {
         for (int x = 0; x < longueur; ++x) {
+            Cellule* celluleActuelle = cellules[y][x].get();
             int voisinsVivants = getVoisinsVivants(x, y); 
-            EtatCellule* nouvelEtat = cellules[y][x]->getEtat()->calculerProchainEtat(voisinsVivants);
+            
+            // L'état actuel de la cellule calcule l'état futur (Polymorphisme)
+            EtatCellule* nouvelEtat = celluleActuelle->calculerProchainEtat(voisinsVivants);
             futursEtats[y][x] = nouvelEtat;
         }
     }
+
     // DEUXIÈME PASSE : Application des nouveaux états
+    // On met à jour le pointeur interne de chaque Cellule vers le nouveau Singleton
     for (int y = 0; y < hauteur; ++y) {
         for (int x = 0; x < longueur; ++x) {
             cellules[y][x]->majEtat(futursEtats[y][x]);
         }
     }
-    */
 }
 
 // Implémentation des accesseurs
 Cellule* Grille::getCellule(int x, int y) const {
-    // Vérification des limites pour éviter un crash
     if (x >= 0 && x < longueur && y >= 0 && y < hauteur) {
-        return cellules[y][x];
+        // Retourne le pointeur brut contenu dans l'unique_ptr
+        return cellules[y][x].get(); 
     }
     return nullptr;
 }
 
 int Grille::getLongueur() const { return longueur; }
 int Grille::getHauteur() const { return hauteur; }
+
+// Ajout pour l'affichage (Vue simple)
+void Grille::afficherGrille() const {
+    std::cout << "--------------------" << std::endl;
+    for (int y = 0; y < hauteur; ++y) {
+        for (int x = 0; x < longueur; ++x) {
+            // Utilisation du proxy getRepresentation() (Polymorphisme)
+            std::cout << cellules[y][x]->getRepresentation() << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "--------------------" << std::endl;
+}
