@@ -1,26 +1,22 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <ReglesJeu.hpp>
-using namespace std;
+#include "ReglesJeu.hpp"
+#include "EtatCellule.hpp"
+#include "EtatMorte.hpp"
+#include "EtatVivante.hpp"
 
 
+EtatCellule* ReglesJeu :: appliquerRegles(EtatCellule* etat_actuel, int voisines_vivantes) {
+    if (etat_actuel -> estVivante() == true) { 
 
-// --- 2. Appliquer les règles de transition ---
-int ReglesJeu::appliquerRegles(int etat_actuel, int voisines_vivantes) {
-    if (etat_actuel == 1) { // VIVANTE
-        // Survie si 2 OU 3 voisines
         if (voisines_vivantes == 2 || voisines_vivantes == 3) {
-            return 1; 
+            return etat_actuel; 
         } else {
-            return 0; // Mort
+            return new EtatMorte(); 
         }
-    } else { // MORTE
-        // Naissance si EXACTEMENT 3 voisines
+    } else if (etat_actuel -> estVivante() == false) { 
         if (voisines_vivantes == 3) {
-            return 1; // Naissance
+            return new EtatVivante();
         } else {
-            return 0; // Reste Morte
+            return etat_actuel; 
         }
     }
 }
