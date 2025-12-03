@@ -24,7 +24,7 @@ int ReglesJeu::compterVoisinesVivantes(int ligne, int colonne, const Grid& grill
     return live_neighbors;
 }
 
-
+// --- 3. Calculer le prochain tour ---
 Grid ReglesJeu::prochainTour(const Grid& grille_actuelle) {
     if (grille_actuelle.empty()) return {};
     int lignes = grille_actuelle.size();
