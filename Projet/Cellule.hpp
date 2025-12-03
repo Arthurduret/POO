@@ -5,18 +5,17 @@
 
 class Cellule {
 protected:
-    EtatCellule* etat_actuel;
+    EtatCellule* etat_actuel = nullptr; 
     
 public:
-    Cellule() : etat_actuel(nullptr) {}
+    Cellule() {}; 
+    
     virtual ~Cellule(); 
 
-    
-    EtatCellule* getEtat() const {
-        return etat_actuel;
-    }
+    EtatCellule* getEtat() const;
 
     void setEtat(EtatCellule* new_etat);
+    
     bool estVivante() const;
 };
 

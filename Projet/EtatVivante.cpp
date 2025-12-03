@@ -2,4 +2,4 @@
 
 bool EtatVivante::estVivante() const {
     return true;
-}
+};
