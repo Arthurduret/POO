@@ -1,22 +1,23 @@
-#ifndef CELLULE_H
-#define CELLULE_H
+#ifndef CELLULE_HPP
+#define CELLULE_HPP
 
 #include "EtatCellule.hpp"
 
 class Cellule {
-    protected :
-        EtatCellule* etat_actuel;
+protected:
+    EtatCellule* etat_actuel;
     
-    public :
-        Cellule() : etat_actuel(nullptr) {}
-        // on fait nullptr pour l'initialiser sur un poiteur null
+public:
+    Cellule() : etat_actuel(nullptr) {}
+    virtual ~Cellule(); 
 
-        EtatCellule* getEtat() const {
-            return etat_actuel;
-        }
+    
+    EtatCellule* getEtat() const {
+        return etat_actuel;
+    }
 
-        ~Cellule() {}
+    void setEtat(EtatCellule* new_etat);
+    bool estVivante() const;
 };
 
-
-#endif
+#endif 
