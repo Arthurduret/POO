@@ -1,11 +1,12 @@
 #include "Jeu.hpp"
 #include "Grille.hpp"
+#include "ReglesJeu.hpp"
 #include <iostream>
 #include <fstream>
 using namespace std;
 using GridData = vector<vector<int>>;
 
-GridData lireConfiguration(const string& nomFichier) {
+GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) {
     GridData configuration; 
     ifstream fichier(nomFichier);
     if (!fichier.is_open()) {   
@@ -71,5 +72,8 @@ void JeuDeLaVie::lancer(int generations) {
         for (ObservateurGrille* obs : observateurs) {
             obs->notifierChangement(*grille);
         }
+
+        Grille* Grille::calculerProchaineGeneration(Grille&);
+        
     }
 }
