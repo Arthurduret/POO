@@ -66,10 +66,14 @@ void VueGraphique::draw(const Grille& grille) {
 
     // Parcours de la grille
     for (int y = 0; y < grille.getHauteur(); ++y) {
-        for (int x = 0; x < grille.getLongueur() ++x) {
+        // Fixe l'erreur de syntaxe en ajoutant un point-virgule (;)
+        for (int x = 0; x < grille.getLongueur(); ++x) { 
             // NOTE : ici on utilise ->estVivante() en supposant que getCellule retourne un pointeur.
             // Si getCellule retourne une référence (Cellule&), remplacez "->" par "."
-            if (grille.getCellule(static_cast<size_t>(x), static_cast<size_t>(y)).estVivante()) {
+            
+            // Fixe l'erreur de pointeur en utilisant "->" à la place de "." 
+            // et simplifie les arguments, car x et y sont déjà des int.
+            if (grille.getCellule(x, y)->estVivante()) { 
                 sf::RectangleShape cellShape;
                 cellShape.setSize(sf::Vector2f(cellSize, cellSize));
                 cellShape.setPosition(x * cellSize, y * cellSize);
