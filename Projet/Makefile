@@ -1,16 +1,18 @@
-all: main
+# Utilisation de g++ car clang++ n'est pas trouvé
+CXX = g++
 
-CXX = g++  # Changé de clang++ à g++ pour résoudre l'erreur "not found"
-override CXXFLAGS += -lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system -g -Wmost -Werror 
+# Fichiers source du projet
+SRCS = ReglesJeu.cpp EtatMorte.cpp EtatVivante.cpp Jeu.cpp Grille.cpp Cellule.cpp main.cpp VueGraphique.cpp VueConsole.cpp
 
-SRCS = $(shell find . -name '.ccls-cache' -type d -prune -o -type f -name '*.cpp' -print | sed -e 's/ /\\ /g')
-HEADERS = $(shell find . -name '.ccls-cache' -type d -prune -o -type f -name '*.h' -print)
+# Options de compilation (inclus les liens vers SFML)
+CXXFLAGS = -g -Wall -Wextra -lsfml-graphics -lsfml-window -lsfml-system
 
-main: $(SRCS) $(HEADERS)
-[TAB]$(CXX) $(CXXFLAGS) $(SRCS) -o "$@"
+# Cible principale : création de l'exécutable 'jeu_vie'
+all: jeu_vie
 
-main-debug: $(SRCS) $(HEADERS)
-[TAB]$(CXX) $(CXXFLAGS) -U_FORTIFY_SOURCE -O0 $(SRCS) -o "$@"
+jeu_vie: $(SRCS)
+[TAB]$(CXX) $(CXXFLAGS) $^ -o $@
 
+# Cible de nettoyage
 clean:
-[TAB]rm -f main main-debug
+[TAB]rm -f jeu_vie
