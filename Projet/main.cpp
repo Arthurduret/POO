@@ -35,11 +35,19 @@ int main() {
         std::cout << "Choix (1-3) : ";
         std::cin >> choice;
 
-        // Demander le délai si vue graphique
+        // Demander le délai si l'utilisateur active au moins une vue (accepte la virgule ou le point)
         VueGraphique* vueGraphique = nullptr;
-        if (choice == 1 || choice == 3) {
+        if (choice >= 1 && choice <= 3) {
             std::cout << "Délai entre chaque itération (en secondes, défaut 0.5s) : ";
-            std::cin >> delai;
+            std::string delaiStr;
+            std::cin >> delaiStr;
+            // Remplacer la virgule par un point pour les formats francophones (ex: 0,5)
+            for (char &c : delaiStr) if (c == ',') c = '.';
+            try {
+                delai = std::stof(delaiStr);
+            } catch (...) {
+                delai = 0.5f;
+            }
             if (delai < 0) delai = 0.5f;
         }
 
@@ -55,6 +63,7 @@ int main() {
 
         if (choice == 2 || choice == 3) {
             vueConsole = new VueConsole();
+            vueConsole->setDelai(delai);
             jeu.ajouterObservateur(vueConsole);
             std::cout << "Vue Console activée." << std::endl;
         }
@@ -62,6 +71,7 @@ int main() {
         if (choice < 1 || choice > 3) {
             std::cerr << "Choix invalide. Vue Console par défaut." << std::endl;
             vueConsole = new VueConsole();
+            vueConsole->setDelai(delai);
             jeu.ajouterObservateur(vueConsole);
         }
 
