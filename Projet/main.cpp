@@ -9,6 +9,7 @@ int main() {
         std::string configFile;
         int iterations = 0;
         int choice = 0;
+        float delai = 0.5f;
 
         // Demander le fichier de configuration
         std::cout << "=== Jeu de la Vie ===" << std::endl;
@@ -34,14 +35,22 @@ int main() {
         std::cout << "Choix (1-3) : ";
         std::cin >> choice;
 
-        // Créer et ajouter les observateurs
+        // Demander le délai si vue graphique
         VueGraphique* vueGraphique = nullptr;
+        if (choice == 1 || choice == 3) {
+            std::cout << "Délai entre chaque itération (en secondes, défaut 0.5s) : ";
+            std::cin >> delai;
+            if (delai < 0) delai = 0.5f;
+        }
+
+        // Créer et ajouter les observateurs
         VueConsole* vueConsole = nullptr;
 
         if (choice == 1 || choice == 3) {
             vueGraphique = new VueGraphique(800, 600, 10.f);
+            vueGraphique->setDelai(delai);
             jeu.ajouterObservateur(vueGraphique);
-            std::cout << "Vue Graphique activée." << std::endl;
+            std::cout << "Vue Graphique activée (délai: " << delai << "s)." << std::endl;
         }
 
         if (choice == 2 || choice == 3) {

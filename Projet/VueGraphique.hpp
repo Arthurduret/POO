@@ -19,10 +19,14 @@ class VueGraphique : public ObservateurGrille {
 
         void setCellSize(float s) { cellSize = s; }
         float getCellSize() const { return cellSize; }
+        
+        void setDelai(float d) { delai = d; }
+        float getDelai() const { return delai; }
 
     private:
         std::unique_ptr<sf::RenderWindow> window;
         float cellSize;
+        float delai;
 };
 
 #endif

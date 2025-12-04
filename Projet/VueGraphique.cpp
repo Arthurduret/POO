@@ -2,6 +2,8 @@
 #include "Grille.hpp"
 #include "Cellule.hpp"
 #include <SFML/Graphics.hpp>
+#include <chrono>
+#include <thread>
 
 /**
  * Constructeur
@@ -17,7 +19,8 @@ VueGraphique::VueGraphique(unsigned int width, unsigned int height, float cellSi
           "Jeu de la Vie (SFML) - Observateur", 
           sf::Style::Close | sf::Style::Titlebar
       )),
-      cellSize(cellSize)
+      cellSize(cellSize),
+      delai(0.5f)
 {
     // Fixer la limite de rafraîchissement à 60 FPS.
     if (window) {
@@ -63,10 +66,10 @@ void VueGraphique::draw(const Grille& grille) {
 
     // Parcours de la grille
     for (int y = 0; y < grille.getHauteur(); ++y) {
-        for (int x = 0; x < grille.getLongueur(); ++x) {
+        for (int x = 0; x < grille.getLargeur(); ++x) {
             // NOTE : ici on utilise ->estVivante() en supposant que getCellule retourne un pointeur.
             // Si getCellule retourne une référence (Cellule&), remplacez "->" par "."
-            if (grille.getCellule(x, y)->estVivante()) {
+            if (grille.getCellule(static_cast<size_t>(x), static_cast<size_t>(y)).estVivante()) {
                 sf::RectangleShape cellShape;
                 cellShape.setSize(sf::Vector2f(cellSize, cellSize));
                 cellShape.setPosition(x * cellSize, y * cellSize);
@@ -88,4 +91,7 @@ void VueGraphique::notifierChangement(const Grille& grille) {
     if (!isWindowOpen()) return;
     gererEvenements();
     draw(grille);
+    
+    // Pause selon le délai choisi
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(delai * 1000)));
 }
