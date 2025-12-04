@@ -1,6 +1,8 @@
 #ifndef REGLESJEU_HPP
 #define REGLESJEU_HPP
 
+#include "EtatCellule.hpp"
+
 class ReglesJeu {
     public :
         
