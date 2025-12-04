@@ -1,7 +1,7 @@
 #include "Jeu.hpp"
 #include "Grille.hpp"
 #include "ReglesJeu.hpp"
-#include "VueGraphique.hpp" // AJOUT: Pour le dynamic_cast dans la boucle de pause
+#include "VueGraphique.hpp" // Pour le dynamic_cast
 #include <iostream>
 #include <fstream>
 #include <vector> 
@@ -12,6 +12,8 @@
 using namespace std;
 using GridData = vector<vector<int>>;
 
+
+// ... (JeuDeLaVie::lireConfiguration)
 
 GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { 
     GridData configuration; 
@@ -37,7 +39,7 @@ GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) {
     return configuration;
 }
 
-// MODIFICATION: Initialisation de nomFichierConfig
+
 JeuDeLaVie::JeuDeLaVie(const string& nomFichierConfig) : nomFichierConfig(nomFichierConfig) { 
     GridData config = lireConfiguration(nomFichierConfig);
     
@@ -62,7 +64,6 @@ void JeuDeLaVie::ajouterObservateur(ObservateurGrille* vue) {
     observateurs.push_back(vue);
 }
 
-// NOUVEAU: Logique pour réinitialiser la grille
 void JeuDeLaVie::resetGrille() {
     if (!grille) return;
     
@@ -83,7 +84,7 @@ void JeuDeLaVie::resetGrille() {
     this->grille = new Grille(longueur, hauteur); 
     this->grille->init(config);
     
-    // 3. Reprendre le jeu (si l'utilisateur clique sur Redémarrer, il veut relancer)
+    // 3. Reprendre le jeu
     reprendre();
     
     // 4. Forcer un affichage immédiat de la grille réinitialisée
@@ -105,11 +106,11 @@ void JeuDeLaVie::lancer(int generations) {
 
     for (int i = 0; i<generations; i++) {
         
-        // AJOUT: Gestion de l'état de pause
+        // ESSENTIEL : Traite les événements SFML pendant la pause
         while (estEnPause) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             
-            // Permet à la VueGraphique de continuer à gérer les événements (clics de souris) pendant la pause
+            // Permet à la VueGraphique de continuer à gérer les clics (REPRENDRE/REDÉMARRER)
             for (ObservateurGrille* obs : observateurs) {
                 if (VueGraphique* vg = dynamic_cast<VueGraphique*>(obs)) {
                     vg->gererEvenements();
@@ -119,7 +120,7 @@ void JeuDeLaVie::lancer(int generations) {
         
         cout << "\n--- Generation " << i + 1 << "---" << endl; 
 
-        // 1. Notifier les observateurs de l'état actuel (AVANT l'évolution)
+        // 1. Notifier les observateurs (appelera notifierChangement() qui appelle gererEvenements())
         for (ObservateurGrille* obs : observateurs) {
             obs->notifierChangement(*grille);
         }
@@ -131,7 +132,6 @@ void JeuDeLaVie::lancer(int generations) {
     
     cout << "\n--- Fin du jeu ---" << endl;
     
-    // Après la fin du jeu, on s'assure que la dernière vue est affichée.
     for (ObservateurGrille* obs : observateurs) {
         obs->notifierChangement(*grille);
     }

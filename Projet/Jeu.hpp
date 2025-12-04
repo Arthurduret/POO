@@ -5,7 +5,7 @@
 #include "ObservateurGrille.hpp"
 #include <vector>
 #include <string>
-#include <algorithm> 
+#include <algorithm> // Pour std::max
 using namespace std;
 using GridData = vector<vector<int>>;
 
@@ -14,11 +14,11 @@ class JeuDeLaVie {
     private : 
         Grille* grille;
         vector<ObservateurGrille*> observateurs;
-        // AJOUT: Stocker le nom du fichier pour le redémarrage
-        string nomFichierConfig;
+        string nomFichierConfig; // Pour le redémarrage
         
     public :
-        bool estEnPause = true; // Initialiser en pause par défaut pour la démo
+        // Éléments de contrôle
+        bool estEnPause = true; // Démarre en pause
         float delaiJeu = 0.5f; 
 
         JeuDeLaVie(const string& nomFichierConfig);
@@ -31,12 +31,11 @@ class JeuDeLaVie {
 
         void lancer(int generations);
         
-        // NOUVEAU: Méthode pour réinitialiser la grille
+        // Méthodes de contrôle
         void resetGrille();
-
         void pause() { estEnPause = true; }
         void reprendre() { estEnPause = false; }
-        void setDelai(float d) { delaiJeu = std::max(0.01f, d); }
+        void setDelai(float d) { delaiJeu = std::max(0.01f, d); } // Délai min de 0.01s
         float getDelai() const { return delaiJeu; }
 };
 
