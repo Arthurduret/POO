@@ -1,7 +1,7 @@
 #include "VueGraphique.hpp"
 #include "Grille.hpp"
 #include "Cellule.hpp"
-#include "Jeu.hpp" // AJOUT
+#include "Jeu.hpp"
 #include <SFML/Graphics.hpp>
 #include <chrono>
 #include <thread>
@@ -129,20 +129,25 @@ void VueGraphique::handleButtonClick(sf::Vector2f clickPos) {
  * Constructeur
  */
 VueGraphique::VueGraphique(unsigned int width, unsigned int height, float cellSize, JeuDeLaVie* jeu)
-    // MODIFICATION : Ajuster la largeur de la fenêtre pour l'interface UI
     : window(std::make_unique<sf::RenderWindow>(
-          sf::VideoMode(width + UI_WIDTH, height), // Taille ajustée (ex: 800x600)
+          sf::VideoMode(width + UI_WIDTH, height),
           "Jeu de la Vie (SFML) - Observateur", 
           sf::Style::Close | sf::Style::Titlebar
       )),
       cellSize(cellSize),
-      jeu(jeu) // Initialisation du pointeur jeu
+      jeu(jeu)
 {
     if (window) {
         window->setFramerateLimit(60); 
     }
-    // AJOUT : Configuration de l'interface
     setupUI(width, height);
+}
+
+/**
+ * Vérifie si la fenêtre SFML est ouverte.
+ */
+bool VueGraphique::isWindowOpen() const {
+    return window && window->isOpen();
 }
 
 /**
@@ -157,7 +162,6 @@ void VueGraphique::gererEvenements() {
         if (event.type == sf::Event::Closed) {
             window->close();
         }
-        // AJOUT : Gestion des clics de souris
         else if (event.type == sf::Event::MouseButtonReleased) {
             if (event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2f clickPos = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
@@ -191,19 +195,17 @@ void VueGraphique::draw(const Grille& grille) {
     window->draw(stopText);
     window->draw(plusText);
     window->draw(minusText);
-    updateDelayText(); // Mise à jour du texte avant le dessin
+    updateDelayText();
     window->draw(delayText);
 
 
     // 4. Dessin de la grille (limité à GAME_AREA_WIDTH)
     for (int y = 0; y < grille.getHauteur(); ++y) {
-        // Limitation pour s'assurer qu'on ne dessine pas en dehors de la zone de jeu
         if (y * cellSize >= window->getSize().y) continue; 
         
         for (int x = 0; x < grille.getLongueur(); ++x) { 
              if (x * cellSize >= GAME_AREA_WIDTH) continue; 
 
-            // Correction de l'erreur précédente: utilisation de -> pour un pointeur
             if (grille.getCellule(x, y)->estVivante()) { 
                 sf::RectangleShape cellShape;
                 cellShape.setSize(sf::Vector2f(cellSize, cellSize));
@@ -229,7 +231,6 @@ void VueGraphique::notifierChangement(const Grille& grille) {
     gererEvenements();
     draw(grille);
     
-    // CORRECTION: Utiliser le délai du jeu centralisé
     if (jeu) {
         std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(jeu->getDelai() * 1000)));
     } else {
