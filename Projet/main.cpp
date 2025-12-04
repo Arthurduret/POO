@@ -1,6 +1,6 @@
-#include "Jeu.hpp"               // Contient JeuDeLaVie
-#include "VueConsole.hpp"        // Implémentation de la vue console
-#include "VueGraphique.hpp"      // Implémentation de la vue graphique
+#include "Jeu.cpp"               // Contient JeuDeLaVie
+#include "VueConsole.cpp"        // Implémentation de la vue console
+#include "VueGraphique.cpp"      // Implémentation de la vue graphique
 #include "ObservateurGrille.hpp" // La classe abstraite (pour le polymorphisme)
 #include <iostream>
 #include <limits>
