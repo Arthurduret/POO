@@ -1,102 +1,139 @@
 #include "Grille.hpp"
+#include "Cellule.hpp"
+#include "EtatVivante.hpp"
+#include "EtatMorte.hpp"
+#include "ReglesJeu.hpp" 
+#include <iostream>
 #include <stdexcept>
+#include <vector>
+#include <memory> // AJOUTÉ : Nécessaire pour std::unique_ptr et std::make_unique
+#include <utility> // AJOUTÉ : Nécessaire pour std::move
+
 using namespace std;
 
 // Constructeur : initialise la grille avec des cellules par défaut
-Grille::Grille(size_t largeur, size_t hauteur)
-    : largeur_(largeur), hauteur_(hauteur),
-      cellules_(hauteur, vector<Cellule>(largeur))
-{}
+Grille::Grille(int longueur, int hauteur): longueur(longueur), hauteur(hauteur) {}
 
 // Accesseurs dimensionnels
-size_t Grille::getLargeur() const { return largeur_; }
-size_t Grille::getHauteur() const { return hauteur_; }
+int Grille::getLongueur() const { return longueur; }
+int Grille::getHauteur() const { return hauteur; }
 
-// Accès aux cellules (vérification des bornes)
-const Cellule& Grille::getCellule(size_t x, size_t y) const {
-    if (x >= largeur_ || y >= hauteur_) {
-        throw out_of_range("Grille::getCellule : indices hors limites");
+void Grille::init(const GridData& donnees) {
+    if (donnees.empty() || donnees[0].empty()) {
+        throw std::runtime_error("Configuration de grille invalide.");
     }
-    return cellules_[y][x];
-}
+    
+    int hauteur_config = (int)donnees.size();
+    int longueur_config = (int)donnees[0].size(); 
 
-Cellule& Grille::getCellule(size_t x, size_t y) {
-    if (x >= largeur_ || y >= hauteur_) {
-        throw out_of_range("Grille::getCellule : indices hors limites");
-    }
-    return cellules_[y][x];
-}
-
-// Modifier l'état d'une cellule
-void Grille::setCelluleVivante(size_t x, size_t y, bool vivante) {
-    if (x >= largeur_ || y >= hauteur_) return;
-    cellules_[y][x].setVivante(vivante); // adapte si la méthode a un autre nom
-}
-
-// Observateurs
-void Grille::ajouterObservateur(ObservateurGrille* obs) {
-    if (!obs) return;
-    if (find(observateurs_.begin(), observateurs_.end(), obs) == observateurs_.end()) {
-        observateurs_.push_back(obs);
-    }
-}
-
-void Grille::retirerObservateur(ObservateurGrille* obs) {
-    observateurs_.erase(remove(observateurs_.begin(), observateurs_.end(), obs), observateurs_.end());
-}
-
-void Grille::notifierObservateurs() const {
-    for (auto obs : observateurs_) {
-        if (obs) obs->notifierChangement(*this);
-    }
-}
-
-// --- 1. Compter les voisines vivantes (Comptage Toroidal) ---
-int ReglesJeu::compterVoisinesVivantes(int ligne, int colonne, const Grid& grille) {
-    int live_neighbors = 0;
-    int rows = grille.size();
-    if (rows == 0) return 0;
-    int cols = grille[0].size();
-
-    // Parcourir les 9 positions autour de la cellule
-    for (int r = ligne - 1; r <= ligne + 1; ++r) {
-        for (int c = colonne - 1; c <= colonne + 1; ++c) {
+    cellules.resize(hauteur_config);
+    
+    for (int y = 0; y < hauteur_config; ++y) {
+        cellules[y].reserve(longueur_config); 
+        for (int x = 0; x < longueur_config; ++x) {
+            // Utilisation de std::make_unique pour allouer la Cellule
+            CellPtr nouvelle_cellule = make_unique<Cellule>();
+            EtatCellule* nouvel_etat = nullptr;
             
-            // Ignorer la cellule centrale
-            if (r == ligne && c == colonne) {
+            // Choisir l'état initial
+            if (donnees[y][x] == 1) {
+                nouvel_etat = new EtatVivante();
+            } else {
+                nouvel_etat = new EtatMorte();
+            }
+            
+            if (nouvel_etat != nullptr) {
+                nouvelle_cellule->setEtat(nouvel_etat);
+            }
+            
+            // Ajouter et transférer la propriété (std::move)
+            cellules[y].push_back(std::move(nouvelle_cellule));
+        }
+    }
+    this->hauteur = hauteur_config;
+    this->longueur = longueur_config;
+}
+
+
+Cellule* Grille::getCellule(int x, int y) const {
+    if (cellules.empty()) {
+        return nullptr;
+    }
+    
+    // Géométrie Toroidale : assure le wrapping
+    int y_toroidal = (y % hauteur + hauteur) % hauteur;
+    int x_toroidal = (x % longueur + longueur) % longueur;
+    
+    return cellules[y_toroidal][x_toroidal].get();
+}
+
+
+int Grille::getVoisinsVivants(int x, int y) const {
+    int voisinsVivants = 0;
+    
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+            if (dx == 0 && dy == 0) {
                 continue;
             }
 
-            // Gestion Toroidale : assure que r_toroidal et c_toroidal sont toujours dans les limites [0, rows/cols - 1]
-            int r_toroidal = (r + rows) % rows;
-            int c_toroidal = (c + cols) % cols;
+            Cellule* voisin = getCellule(x + dx, y + dy);
             
-            live_neighbors += grille[r_toroidal][c_toroidal];
+            if (voisin && voisin->estVivante()) {
+                voisinsVivants++;
+            }
         }
     }
-    return live_neighbors;
+    return voisinsVivants;
 }
 
-// --- 3. Calculer le prochain tour ---
-Grid ReglesJeu::prochainTour(const Grid& grille_actuelle) {
-    if (grille_actuelle.empty()) return {};
-    int lignes = grille_actuelle.size();
-    int colonnes = grille_actuelle[0].size();
 
-    // Création de la grille future
-    Grid grille_future(lignes, std::vector<int>(colonnes)); 
+void Grille::evoluer() {
+    if (cellules.empty()) return;
 
-    // Boucle sur chaque cellule
-    for (int i = 0; i < lignes; ++i) {
-        for (int j = 0; j < colonnes; ++j) {
+    ReglesJeu regles;
+    std::vector<std::vector<EtatCellule*>> prochainsEtats(hauteur, std::vector<EtatCellule*>(longueur));
+    
+    // 1. Calculer les états futurs (sans modifier la grille actuelle)
+    for (int y = 0; y < hauteur; ++y) {
+        for (int x = 0; x < longueur; ++x) {
+            Cellule* celluleActuelle = cellules[y][x].get();
+            int voisins = getVoisinsVivants(x, y);
             
-            int N = compterVoisinesVivantes(i, j, grille_actuelle);
-            int etat_actuel = grille_actuelle[i][j];
+            EtatCellule* etatFutur = regles.appliquerRegles(celluleActuelle->getEtat(), voisins);
             
-            // Appliquer la logique et stocker dans la grille future
-            grille_future[i][j] = appliquerRegles(etat_actuel, N);
+            if (etatFutur == celluleActuelle->getEtat()) {
+                prochainsEtats[y][x] = nullptr; 
+            } else {
+                prochainsEtats[y][x] = etatFutur; 
+            }
         }
     }
     
-    return grille_future; 
+    // 2. Appliquer les nouveaux états
+    for (int y = 0; y < hauteur; ++y) {
+        for (int x = 0; x < longueur; ++x) {
+            EtatCellule* nouvelEtat = prochainsEtats[y][x];
+            
+            if (nouvelEtat != nullptr) {
+                cellules[y][x]->setEtat(nouvelEtat);
+            }
+        }
+    }
+}
+
+void Grille::afficherGrille() const {
+    std::cout << "--- Affichage de la Grille ---" << std::endl;
+    for (int y = 0; y < hauteur; y++) {
+        for (int x = 0; x < longueur; x++) {
+            Cellule* cell = getCellule(x, y);
+            if (cell && cell->estVivante()) {
+                std::cout << "■";
+            }
+            else {
+                std::cout << "□";
+            }
+        }
+        std::cout << std::endl;
+    }
 }
