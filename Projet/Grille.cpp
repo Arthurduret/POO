@@ -1,4 +1,57 @@
- // --- 1. Compter les voisines vivantes (Comptage Toroidal) ---
+#include "Grille.hpp"
+#include <stdexcept>
+using namespace std;
+
+// Constructeur : initialise la grille avec des cellules par défaut
+Grille::Grille(size_t largeur, size_t hauteur)
+    : largeur_(largeur), hauteur_(hauteur),
+      cellules_(hauteur, vector<Cellule>(largeur))
+{}
+
+// Accesseurs dimensionnels
+size_t Grille::getLargeur() const { return largeur_; }
+size_t Grille::getHauteur() const { return hauteur_; }
+
+// Accès aux cellules (vérification des bornes)
+const Cellule& Grille::getCellule(size_t x, size_t y) const {
+    if (x >= largeur_ || y >= hauteur_) {
+        throw out_of_range("Grille::getCellule : indices hors limites");
+    }
+    return cellules_[y][x];
+}
+
+Cellule& Grille::getCellule(size_t x, size_t y) {
+    if (x >= largeur_ || y >= hauteur_) {
+        throw out_of_range("Grille::getCellule : indices hors limites");
+    }
+    return cellules_[y][x];
+}
+
+// Modifier l'état d'une cellule
+void Grille::setCelluleVivante(size_t x, size_t y, bool vivante) {
+    if (x >= largeur_ || y >= hauteur_) return;
+    cellules_[y][x].setVivante(vivante); // adapte si la méthode a un autre nom
+}
+
+// Observateurs
+void Grille::ajouterObservateur(ObservateurGrille* obs) {
+    if (!obs) return;
+    if (find(observateurs_.begin(), observateurs_.end(), obs) == observateurs_.end()) {
+        observateurs_.push_back(obs);
+    }
+}
+
+void Grille::retirerObservateur(ObservateurGrille* obs) {
+    observateurs_.erase(remove(observateurs_.begin(), observateurs_.end(), obs), observateurs_.end());
+}
+
+void Grille::notifierObservateurs() const {
+    for (auto obs : observateurs_) {
+        if (obs) obs->notifierChangement(*this);
+    }
+}
+
+// --- 1. Compter les voisines vivantes (Comptage Toroidal) ---
 int ReglesJeu::compterVoisinesVivantes(int ligne, int colonne, const Grid& grille) {
     int live_neighbors = 0;
     int rows = grille.size();
