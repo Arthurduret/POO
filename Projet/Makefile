@@ -11,8 +11,10 @@ CXXFLAGS = -g -Wall -Wextra -lsfml-graphics -lsfml-window -lsfml-system
 all: jeu_vie
 
 jeu_vie: $(SRCS)
-[TAB]$(CXX) $(CXXFLAGS) $^ -o $@
+    <-- C'est ici qu'il y a la TABULATION -->
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # Cible de nettoyage
 clean:
-[TAB]rm -f jeu_vie
+    <-- C'est ici qu'il y a la TABULATION -->
+	rm -f jeu_vie
