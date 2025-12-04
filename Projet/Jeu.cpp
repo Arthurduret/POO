@@ -3,7 +3,10 @@
 #include "ReglesJeu.hpp"
 #include <iostream>
 #include <fstream>
-#include <vector> // Nécessaire pour GridData
+#include <vector> 
+#include <chrono>   // AJOUT
+#include <thread>   // AJOUT
+
 using namespace std;
 using GridData = vector<vector<int>>;
 
@@ -69,6 +72,12 @@ void JeuDeLaVie::lancer(int generations) {
     cout << "Demarrage du Jeu de la Vie de Conway pour " << generations << " generations.\n";
 
     for (int i = 0; i<generations; i++) {
+        // AJOUT: Gestion de l'état de pause
+        while (estEnPause) {
+            // Dormir brièvement pour libérer la main et laisser VueGraphique gérer les événements
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+        
         // Correction de l'affichage de la génération
         cout << "\n--- Generation " << i + 1 << "---" << endl; 
 
@@ -78,7 +87,6 @@ void JeuDeLaVie::lancer(int generations) {
         }
 
         // 2. Faire évoluer la grille
-        // REMPLACEMENT de la ligne incorrecte 'Grille* Grille::calculerProchaineGeneration(Grille&);'
         grille->evoluer();
         
     }

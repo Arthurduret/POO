@@ -18,8 +18,6 @@ void VueConsole::notifierChangement(const Grille& grille){
         cout << endl;
     }
 
-    // Respecter le délai configuré pour la console
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(delai * 1000)));
+    // SUPPRESSION: Le délai est maintenant géré par la VueGraphique
+    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(delai * 1000)));
 }
-
-

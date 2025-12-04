@@ -3,14 +3,17 @@
 #include "VueConsole.hpp"
 #include <iostream>
 #include <string>
+#include <algorithm> // AJOUT: Pour std::min/max/clamp si nécessaire
 
 int main() {
     try {
         std::string configFile;
         int iterations = 0;
         int choice = 0;
-        float delai = 0.5f;
-
+        
+        // AJOUT/MODIFICATION: Délai initial fixé sur JeuDeLaVie.
+        float initialDelai = 0.5f; 
+        
         // Demander le fichier de configuration
         std::cout << "=== Jeu de la Vie ===" << std::endl;
         std::cout << "Entrez le fichier de configuration (défaut: configuration.txt) : ";
@@ -21,6 +24,9 @@ int main() {
 
         // Créer le jeu
         JeuDeLaVie jeu(configFile);
+        // AJOUT: Définir le délai initial sur l'objet JeuDeLaVie
+        jeu.setDelai(initialDelai);
+
 
         // Demander le nombre d'itérations
         std::cout << "Nombre d'itérations (générations) : ";
@@ -35,35 +41,21 @@ int main() {
         std::cout << "Choix (1-3) : ";
         std::cin >> choice;
 
-        // Demander le délai si l'utilisateur active au moins une vue (accepte la virgule ou le point)
-        VueGraphique* vueGraphique = nullptr;
-        if (choice >= 1 && choice <= 3) {
-            std::cout << "Délai entre chaque itération (en secondes, défaut 0.5s) : ";
-            std::string delaiStr;
-            std::cin >> delaiStr;
-            // Remplacer la virgule par un point pour les formats francophones (ex: 0,5)
-            for (char &c : delaiStr) if (c == ',') c = '.';
-            try {
-                delai = std::stof(delaiStr);
-            } catch (...) {
-                delai = 0.5f;
-            }
-            if (delai < 0) delai = 0.5f;
-        }
+        // Suppression du prompt du délai
 
         // Créer et ajouter les observateurs
         VueConsole* vueConsole = nullptr;
+        VueGraphique* vueGraphique = nullptr;
 
         if (choice == 1 || choice == 3) {
-            vueGraphique = new VueGraphique(800, 600, 10.f);
-            vueGraphique->setDelai(delai);
+            // MODIFICATION: Taille ajustée pour laisser de l'espace à l'interface (600x600 pour la grille + 200 pour UI) et passage de 'jeu'
+            vueGraphique = new VueGraphique(600, 600, 10.f, &jeu);
             jeu.ajouterObservateur(vueGraphique);
-            std::cout << "Vue Graphique activée (délai: " << delai << "s)." << std::endl;
+            std::cout << "Vue Graphique activée (délai initial: " << jeu.getDelai() << "s). La vitesse peut être contrôlée via les boutons de l'interface." << std::endl;
         }
 
         if (choice == 2 || choice == 3) {
             vueConsole = new VueConsole();
-            vueConsole->setDelai(delai);
             jeu.ajouterObservateur(vueConsole);
             std::cout << "Vue Console activée." << std::endl;
         }
@@ -71,11 +63,12 @@ int main() {
         if (choice < 1 || choice > 3) {
             std::cerr << "Choix invalide. Vue Console par défaut." << std::endl;
             vueConsole = new VueConsole();
-            vueConsole->setDelai(delai);
             jeu.ajouterObservateur(vueConsole);
         }
 
         std::cout << "\nLancement du jeu avec " << iterations << " itérations..." << std::endl;
+        std::cout << "Utilisez les boutons 'PAUSE' et 'REPRENDRE' sur la fenêtre graphique." << std::endl;
+
 
         // Lancer le jeu
         jeu.lancer(iterations);

@@ -5,9 +5,9 @@
 #include "ObservateurGrille.hpp"
 #include <vector>
 #include <string>
+#include <algorithm> // Pour std::max
 using namespace std;
 using GridData = vector<vector<int>>;
-
 
 
 class JeuDeLaVie {
@@ -16,6 +16,10 @@ class JeuDeLaVie {
         vector<ObservateurGrille*> observateurs;
         
     public :
+        // AJOUTS: Variables d'état du jeu
+        bool estEnPause = false; 
+        float delaiJeu = 0.5f; 
+
         JeuDeLaVie(const string& nomFichierConfig);
 
         ~JeuDeLaVie();
@@ -25,6 +29,12 @@ class JeuDeLaVie {
         GridData lireConfiguration(const string& nomFichier);
 
         void lancer(int generations);
+
+        // AJOUTS: Méthodes de contrôle
+        void pause() { estEnPause = true; }
+        void reprendre() { estEnPause = false; }
+        void setDelai(float d) { delaiJeu = std::max(0.01f, d); } // Délai min de 0.01s
+        float getDelai() const { return delaiJeu; }
 };
 
 #endif

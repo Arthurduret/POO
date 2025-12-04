@@ -6,19 +6,14 @@
 
 class VueConsole : public ObservateurGrille {
     public :
-        VueConsole() : delai(0.5f) {}
+        // MODIFICATION: Suppression du délai local et des méthodes associées
+        VueConsole() {} 
 
         void notifierChangement(const Grille& grille) override;
 
-        void setDelai(float d) { delai = d; }
-        float getDelai() const { return delai; }
-
-    private:
-        float delai;
+    // private: // SUPPRIME
+    //    float delai; // SUPPRIME
 };
-
-
-
 
 
 #endif
