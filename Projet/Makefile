@@ -1,24 +1,25 @@
-# Makefile pour /home/rthur/POO/Projet
-CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -I.
-LDLIBS := -lsfml-graphics -lsfml-window -lsfml-system
+all: main
 
-SRCS := $(wildcard *.cpp)
-OBJS := $(SRCS:.cpp=.o)
-TARGET := jeu
+CXX = clang++
+override CXXFLAGS += -lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system -g -Wmost -Werror 
 
-.PHONY: all clean run
+# Recherche de tous les fichiers .cpp dans le répertoire actuel (sauf .ccls-cache)
+SRCS = $(shell find . -name '.ccls-cache' -type d -prune -o -type f -name '*.cpp' -print | sed -e 's/ /\\ /g')
 
-all: $(TARGET)
+# Recherche de tous les fichiers .h
+HEADERS = $(shell find . -name '.ccls-cache' -type d -prune -o -type f -name '*.h' -print)
 
-$(TARGET): $(OBJS)
-    $(CXX) $(CXXFLAGS) -o $@ $^ $(LDLIBS)
+# Cible principale (Compilation)
+main: $(SRCS) $(HEADERS)
+## TAB (Remplacer ceci par une VRAIE tabulation)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o "$@"
 
-%.o: %.cpp
-    $(CXX) $(CXXFLAGS) -c -o $@ $<
+# Cible de débogage (sans optimisation -O0)
+main-debug: $(SRCS) $(HEADERS)
+## TAB (Remplacer ceci par une VRAIE tabulation)
+	$(CXX) $(CXXFLAGS) -U_FORTIFY_SOURCE -O0 $(SRCS) -o "$@"
 
+# Cible de nettoyage
 clean:
-    rm -f $(OBJS) $(TARGET)
-
-run: $(TARGET)
-    ./$(TARGET)
+## TAB (Remplacer ceci par une VRAIE tabulation)
+	rm -f main main-debug
