@@ -16,14 +16,14 @@ TARGET = jeu_vie
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-    $(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.cpp
-    $(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 # Cible de nettoyage
 clean:
-    rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
 run: $(TARGET)
-    ./$(TARGET)
+	./$(TARGET)
