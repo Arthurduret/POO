@@ -66,7 +66,7 @@ void VueGraphique::draw(const Grille& grille) {
 
     // Parcours de la grille
     for (int y = 0; y < grille.getHauteur(); ++y) {
-        for (int x = 0; x < grille.getLargeur(); ++x) {
+        for (int x = 0; x < grille.getLongueur() ++x) {
             // NOTE : ici on utilise ->estVivante() en supposant que getCellule retourne un pointeur.
             // Si getCellule retourne une référence (Cellule&), remplacez "->" par "."
             if (grille.getCellule(static_cast<size_t>(x), static_cast<size_t>(y)).estVivante()) {
