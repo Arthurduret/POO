@@ -22,27 +22,19 @@ class VueGraphique : public ObservateurGrille {
         void setCellSize(float s) { cellSize = s; }
         float getCellSize() const { return cellSize; }
         
-        // Suppression des méthodes set/getDelai locales
-        // void setDelai(float d) { delai = d; }
-        // float getDelai() const { return delai; }
-
     private:
         std::unique_ptr<sf::RenderWindow> window;
         float cellSize;
-        // float delai; // SUPPRIME
         
-        // AJOUT : Pointeur vers le contrôleur de jeu
         JeuDeLaVie* jeu; 
 
-        // AJOUT : Éléments d'interface utilisateur SFML
-        sf::RectangleShape startButton;
-        sf::RectangleShape stopButton;
-        sf::RectangleShape plusButton;
-        sf::RectangleShape minusButton;
+        // AJOUT/MODIFICATION : Éléments d'interface utilisateur SFML
+        sf::RectangleShape pauseResumeButton; // Remplace startButton et stopButton
+        sf::RectangleShape resetButton;       // Nouveau bouton "Redémarrer"
 
         sf::Font font;
-        sf::Text startText;
-        sf::Text stopText;
+        sf::Text pauseResumeText;
+        sf::Text resetText;
         sf::Text plusText;
         sf::Text minusText;
         sf::Text delayText;
@@ -50,6 +42,7 @@ class VueGraphique : public ObservateurGrille {
         void setupUI(unsigned int width, unsigned int height);
         void handleButtonClick(sf::Vector2f clickPos);
         void updateDelayText();
+        void updatePauseResumeButton(); // Nouveau pour alterner le texte et la couleur
 };
 
 #endif

@@ -16,6 +16,8 @@
  * Initialisation des éléments d'interface SFML (boutons, texte).
  */
 void VueGraphique::setupUI(unsigned int width, unsigned int height) {
+    if (!jeu) return;
+
     // 1. Charger la police
     if (!font.loadFromFile("arial.ttf")) {
         // En cas d'échec de chargement de police
@@ -27,30 +29,28 @@ void VueGraphique::setupUI(unsigned int width, unsigned int height) {
     float startX = GAME_AREA_WIDTH + (UI_WIDTH - buttonWidth) / 2;
     float currentY = margin;
 
-    // --- Bouton REPRENDRE ---
-    startButton.setSize(sf::Vector2f(buttonWidth, buttonHeight));
-    startButton.setPosition(startX, currentY);
-    startButton.setFillColor(sf::Color(0, 150, 0)); // Vert foncé
+    // --- Bouton PAUSE/REPRISE (Toggle) ---
+    pauseResumeButton.setSize(sf::Vector2f(buttonWidth, buttonHeight));
+    pauseResumeButton.setPosition(startX, currentY);
     
-    startText.setFont(font);
-    startText.setString("REPRENDRE");
-    startText.setCharacterSize(20);
-    startText.setFillColor(sf::Color::White);
-    // Centre le texte
-    startText.setPosition(startX + (buttonWidth - startText.getLocalBounds().width) / 2, currentY + 5.f);
+    pauseResumeText.setFont(font);
+    pauseResumeText.setCharacterSize(20);
+    pauseResumeText.setFillColor(sf::Color::White);
+    updatePauseResumeButton(); // Initialise la couleur et le texte
     currentY += buttonHeight + margin;
 
-    // --- Bouton PAUSE ---
-    stopButton.setSize(sf::Vector2f(buttonWidth, buttonHeight));
-    stopButton.setPosition(startX, currentY);
-    stopButton.setFillColor(sf::Color(150, 0, 0)); // Rouge foncé
+
+    // --- Bouton REDÉMARRER ---
+    resetButton.setSize(sf::Vector2f(buttonWidth, buttonHeight));
+    resetButton.setPosition(startX, currentY);
+    resetButton.setFillColor(sf::Color(100, 100, 100)); // Gris pour Reset
     
-    stopText.setFont(font);
-    stopText.setString("PAUSE");
-    stopText.setCharacterSize(20);
-    stopText.setFillColor(sf::Color::White);
+    resetText.setFont(font);
+    resetText.setString("REDÉMARRER");
+    resetText.setCharacterSize(20);
+    resetText.setFillColor(sf::Color::White);
     // Centre le texte
-    stopText.setPosition(startX + (buttonWidth - stopText.getLocalBounds().width) / 2, currentY + 5.f);
+    resetText.setPosition(startX + (buttonWidth - resetText.getLocalBounds().width) / 2, currentY + 5.f);
     currentY += buttonHeight + margin;
 
     // --- Texte du Délai ---
@@ -58,12 +58,12 @@ void VueGraphique::setupUI(unsigned int width, unsigned int height) {
     delayText.setCharacterSize(16);
     delayText.setFillColor(sf::Color::Black);
     updateDelayText();
-    currentY += 10.f; 
+    currentY = resetButton.getPosition().y + resetButton.getSize().y + margin; // Position après le bouton reset
 
     // --- Bouton MOINS VITE (ralentir) ---
     minusButton.setSize(sf::Vector2f(buttonWidth / 3, buttonHeight));
     minusButton.setPosition(startX + buttonWidth / 2 - minusButton.getSize().x - 5.f, currentY);
-    minusButton.setFillColor(sf::Color(0, 100, 150)); // Bleu
+    minusButton.setFillColor(sf::Color(0, 100, 150));
     
     minusText.setFont(font);
     minusText.setString("<<");
@@ -74,7 +74,7 @@ void VueGraphique::setupUI(unsigned int width, unsigned int height) {
     // --- Bouton PLUS VITE (accélérer) ---
     plusButton.setSize(sf::Vector2f(buttonWidth / 3, buttonHeight));
     plusButton.setPosition(startX + buttonWidth / 2 + 5.f, currentY);
-    plusButton.setFillColor(sf::Color(0, 100, 150)); // Bleu
+    plusButton.setFillColor(sf::Color(0, 100, 150));
     
     plusText.setFont(font);
     plusText.setString(">>");
@@ -93,11 +93,32 @@ void VueGraphique::updateDelayText() {
     ss << "Delai: " << jeu->getDelai() << " s";
     delayText.setString(ss.str());
     
-    // Centrer le texte dans la zone de contrôle
+    // Centrer le texte dans la zone de contrôle (juste après le bouton Reset)
     float textX = GAME_AREA_WIDTH + (UI_WIDTH - delayText.getLocalBounds().width) / 2;
-    float textY = stopButton.getPosition().y + stopButton.getSize().y + 5.f;
+    float textY = resetButton.getPosition().y + resetButton.getSize().y + 5.f;
     delayText.setPosition(textX, textY);
 }
+
+/**
+ * Met à jour l'apparence du bouton Pause/Reprise.
+ */
+void VueGraphique::updatePauseResumeButton() {
+    if (!jeu) return;
+    
+    if (jeu->estEnPause) {
+        pauseResumeButton.setFillColor(sf::Color(0, 150, 0)); // Vert pour Reprise
+        pauseResumeText.setString("REPRENDRE");
+    } else {
+        pauseResumeButton.setFillColor(sf::Color(150, 0, 0)); // Rouge pour Pause
+        pauseResumeText.setString("PAUSE");
+    }
+    
+    // Re-centrer le texte (sa largeur change)
+    float buttonWidth = pauseResumeButton.getSize().x;
+    float buttonX = pauseResumeButton.getPosition().x;
+    pauseResumeText.setPosition(buttonX + (buttonWidth - pauseResumeText.getLocalBounds().width) / 2, pauseResumeButton.getPosition().y + 5.f);
+}
+
 
 /**
  * Gère le clic sur les boutons.
@@ -105,13 +126,17 @@ void VueGraphique::updateDelayText() {
 void VueGraphique::handleButtonClick(sf::Vector2f clickPos) {
     if (!jeu) return;
 
-    // Vérifie le clic sur REPRENDRE
-    if (startButton.getGlobalBounds().contains(clickPos)) {
-        jeu->reprendre();
+    // Vérifie le clic sur PAUSE/REPRISE (Toggle)
+    if (pauseResumeButton.getGlobalBounds().contains(clickPos)) {
+        if (jeu->estEnPause) {
+            jeu->reprendre();
+        } else {
+            jeu->pause();
+        }
     }
-    // Vérifie le clic sur PAUSE
-    else if (stopButton.getGlobalBounds().contains(clickPos)) {
-        jeu->pause();
+    // Vérifie le clic sur REDÉMARRER
+    else if (resetButton.getGlobalBounds().contains(clickPos)) {
+        jeu->resetGrille(); // Réinitialise la grille et met en Reprise.
     }
     // Vérifie le clic sur PLUS VITE (diminuer le délai * 0.8)
     else if (plusButton.getGlobalBounds().contains(clickPos)) {
@@ -139,6 +164,8 @@ VueGraphique::VueGraphique(unsigned int width, unsigned int height, float cellSi
 {
     if (window) {
         window->setFramerateLimit(60); 
+        // Initialiser en pause pour que l'utilisateur clique sur REPRENDRE/REDÉMARRER
+        jeu->pause(); 
     }
     setupUI(width, height);
 }
@@ -187,12 +214,13 @@ void VueGraphique::draw(const Grille& grille) {
     window->draw(separator);
     
     // 3. Dessin des éléments d'interface
-    window->draw(startButton);
-    window->draw(stopButton);
+    updatePauseResumeButton(); // Toujours mettre à jour avant de dessiner
+    window->draw(pauseResumeButton);
+    window->draw(resetButton);
     window->draw(plusButton);
     window->draw(minusButton);
-    window->draw(startText);
-    window->draw(stopText);
+    window->draw(pauseResumeText);
+    window->draw(resetText);
     window->draw(plusText);
     window->draw(minusText);
     updateDelayText();
@@ -228,7 +256,8 @@ void VueGraphique::notifierChangement(const Grille& grille) {
         if (jeu) jeu->pause(); 
         return;
     }
-    gererEvenements();
+    // NOTE: gererEvenements() est maintenant appelé dans Jeu::lancer() 
+    // pendant la boucle 'while (estEnPause)' pour garantir la réactivité.
     draw(grille);
     
     if (jeu) {

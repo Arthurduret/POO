@@ -1,18 +1,19 @@
 #include "Jeu.hpp"
 #include "Grille.hpp"
 #include "ReglesJeu.hpp"
+#include "VueGraphique.hpp" // AJOUT: Pour le dynamic_cast dans la boucle de pause
 #include <iostream>
 #include <fstream>
 #include <vector> 
-#include <chrono>   // AJOUT
-#include <thread>   // AJOUT
+#include <chrono>   
+#include <thread>   
+#include <algorithm> 
 
 using namespace std;
 using GridData = vector<vector<int>>;
 
-// ... (lireConfiguration, JeuDeLaVie::JeuDeLaVie, JeuDeLaVie::~JeuDeLaVie, JeuDeLaVie::ajouterObservateur inchangés)
 
-GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { /* ... (inchangé) ... */
+GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { 
     GridData configuration; 
     ifstream fichier(nomFichier);
     if (!fichier.is_open()) {   
@@ -36,7 +37,8 @@ GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { /* ... (incha
     return configuration;
 }
 
-JeuDeLaVie::JeuDeLaVie(const string& nomFichierConfig) {
+// MODIFICATION: Initialisation de nomFichierConfig
+JeuDeLaVie::JeuDeLaVie(const string& nomFichierConfig) : nomFichierConfig(nomFichierConfig) { 
     GridData config = lireConfiguration(nomFichierConfig);
     
     if (config.empty() || config[0].empty()) {
@@ -44,13 +46,11 @@ JeuDeLaVie::JeuDeLaVie(const string& nomFichierConfig) {
         throw runtime_error("Le fichier de configuration est vide.");
     }
 
-    // Étape 2 : Calculer la hauteur et la longueur
     int hauteur = (int)config.size();         
     int longueur = (int)config[0].size(); 
 
     this->grille = new Grille(longueur, hauteur); 
 
-    // Étape 4 : INITIALISER les Cellules
     this->grille->init(config);
 }
 
@@ -60,6 +60,38 @@ JeuDeLaVie::~JeuDeLaVie() {
 
 void JeuDeLaVie::ajouterObservateur(ObservateurGrille* vue) {
     observateurs.push_back(vue);
+}
+
+// NOUVEAU: Logique pour réinitialiser la grille
+void JeuDeLaVie::resetGrille() {
+    if (!grille) return;
+    
+    // 1. Lire la configuration initiale
+    GridData config = lireConfiguration(nomFichierConfig);
+    
+    if (config.empty() || config[0].empty()) {
+        cerr << "Erreur: Impossible de recharger la configuration de la grille." << endl;
+        return;
+    }
+
+    // 2. Supprimer l'ancienne grille et en créer une nouvelle
+    delete grille; 
+    
+    int hauteur = (int)config.size();         
+    int longueur = (int)config[0].size(); 
+
+    this->grille = new Grille(longueur, hauteur); 
+    this->grille->init(config);
+    
+    // 3. Reprendre le jeu (si l'utilisateur clique sur Redémarrer, il veut relancer)
+    reprendre();
+    
+    // 4. Forcer un affichage immédiat de la grille réinitialisée
+    for (ObservateurGrille* obs : observateurs) {
+        obs->notifierChangement(*grille);
+    }
+    
+    cout << "\n--- Grille réinitialisée (Redémarrage) ---" << endl;
 }
 
 
@@ -72,13 +104,19 @@ void JeuDeLaVie::lancer(int generations) {
     cout << "Demarrage du Jeu de la Vie de Conway pour " << generations << " generations.\n";
 
     for (int i = 0; i<generations; i++) {
+        
         // AJOUT: Gestion de l'état de pause
         while (estEnPause) {
-            // Dormir brièvement pour libérer la main et laisser VueGraphique gérer les événements
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            
+            // Permet à la VueGraphique de continuer à gérer les événements (clics de souris) pendant la pause
+            for (ObservateurGrille* obs : observateurs) {
+                if (VueGraphique* vg = dynamic_cast<VueGraphique*>(obs)) {
+                    vg->gererEvenements();
+                }
+            }
         }
         
-        // Correction de l'affichage de la génération
         cout << "\n--- Generation " << i + 1 << "---" << endl; 
 
         // 1. Notifier les observateurs de l'état actuel (AVANT l'évolution)
@@ -91,8 +129,9 @@ void JeuDeLaVie::lancer(int generations) {
         
     }
     
-    // Ajout : Afficher la dernière génération après que la boucle de jeu soit finie
     cout << "\n--- Fin du jeu ---" << endl;
+    
+    // Après la fin du jeu, on s'assure que la dernière vue est affichée.
     for (ObservateurGrille* obs : observateurs) {
         obs->notifierChangement(*grille);
     }
