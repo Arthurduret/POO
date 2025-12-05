@@ -2,7 +2,8 @@
 #include "Cellule.hpp"
 #include "EtatVivante.hpp"
 #include "EtatMorte.hpp"
-#include "EtatObstacle.hpp"
+#include "EtatObstacleVivant.hpp"
+#include "EtatObstacleMort.hpp"
 #include "ReglesJeu.hpp" 
 #include <iostream>
 #include <stdexcept>
@@ -45,10 +46,10 @@ void Grille::init(const GridData& donnees) {
                 nouvel_etat = new EtatVivante(); // Cellule Vivante 
             } else if (config_val == 0) {
                 nouvel_etat = new EtatMorte();   // Cellule Morte 
-            } else if (config_val == OBSTACLE_VIVANT) { //  Obstacle Vivant
-                nouvel_etat = new EtatObstacle(true);
-            } else if (config_val == OBSTACLE_MORT) { //  Obstacle Mort
-                nouvel_etat = new EtatObstacle(false);
+            } else if (config_val == 2) { //  Obstacle Vivant
+                nouvel_etat = new EtatObstacleVivant();
+            } else if (config_val == 3) { //  Obstacle Mort
+                nouvel_etat = new EtatObstacleMort();
             } else {
                 // Valeur inconnue
                 nouvel_etat = new EtatMorte();

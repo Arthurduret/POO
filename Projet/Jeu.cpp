@@ -19,9 +19,19 @@ GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { /* ... (incha
     while (getline(fichier, ligne)) {
         vector<int> row;
         for (char c : ligne) {
-            if (c == '1' || c == 'X') {
+            if (c == '1') {
                 row.push_back(1); // Cellule vivante
-            } else if (c == '0' || c == '.') {
+            }
+            
+            if (c == '2') {
+                row.push_back(2); //Obstacle vivant
+            }
+
+            if (c== '3') {
+                row.push_back(3); //Obstacle mort
+            }
+            
+            else if (c == '0') {
                 row.push_back(0); // Cellule morte
             }
         }
