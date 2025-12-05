@@ -4,6 +4,7 @@
 #include "EtatObstacleVivant.hpp"
 #include "EtatObstacleMort.hpp"
 
+#include <algorithm> // NÉCESSAIRE pour std::find
 #include <iostream>
 #include <fstream>
 #include <sstream> // NÉCESSAIRE pour construire le nom de fichier de sortie
@@ -86,23 +87,51 @@ void JeuDeLaVie::lancer(int generations) {
 
     cout << "Demarrage du Jeu de la Vie de Conway pour " << generations << " generations.\n";
 
+    // Initialisation de l'historique
+    historiqueEtats.clear();
+    
     for (int i = 0; i<generations; i++) {
-        cout << "\n--- Generation " << i + 1 << "---" << endl; 
+        
+        // Detection du cycle
+        string etat_actuel_snapshot = grille->getSnapshot();
+        
+        // Recherche de l'état actuel dans l'historique
+        auto it = find(historiqueEtats.begin(), historiqueEtats.end(), etat_actuel_snapshot);
+        
+        if (it != historiqueEtats.end()) {
+            // Si un cycle a été trouvé 
 
-        // Afficher les observateurs de l'état actuel (AVANT l'évolution)
+            size_t generation_cycle = std::distance(historiqueEtats.begin(), it) + 1;
+
+            cout << "SIMULATION ARRETEE : Etat stable ou oscillant detecte " << endl;
+            cout << "L'état de la génération " << i + 1 << " est identique a celui de la generation " << generation_cycle << "." << endl;
+            
+            // Afficher l'état final avant l'arrêt
+            for (ObservateurGrille* obs : observateurs) {
+                obs->notifierChangement(*grille);
+            }
+            
+            return; 
+        }
+
+        // Mise à jour de l'historique (si pas de cycle trouve)
+        historiqueEtats.push_back(etat_actuel_snapshot);
+        if (historiqueEtats.size() > maxHistorySize) {
+            historiqueEtats.erase(historiqueEtats.begin()); // Supprimer l'état le plus ancien
+        }
+
+
+        // Affichage et évolution (comme avant)
+        cout << "\n--- Generation " << i + 1 << "---" << endl; 
         for (ObservateurGrille* obs : observateurs) {
             obs->notifierChangement(*grille);
         }
-
-        //  Faire évoluer la grille
-        grille->evoluer();
-
-        // Sauvegarder l'état affiché
-        sauvegarderGrille(*grille, i + 1);
         
+        sauvegarderGrille(*grille, i + 1);
+        grille->evoluer();
     }
     
-    // Ajout : Afficher la dernière génération après que la boucle de jeu soit finie
+    // Afficher la dernière génération après que la boucle de jeu soit finie
     cout << "\n--- Fin du jeu ---" << endl;
     for (ObservateurGrille* obs : observateurs) {
         obs->notifierChangement(*grille);

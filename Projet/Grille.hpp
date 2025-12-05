@@ -38,6 +38,9 @@ public:
     // Accesseurs
     int getLongueur() const;
     int getHauteur() const;
+
+    // Verifier etat stable
+    std::string getSnapshot() const; 
     
     // Affichage pour la console (utilisé par VueConsole)
     void afficherGrille() const; 
