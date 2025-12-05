@@ -7,6 +7,8 @@
 
 int main() {
 
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
     if (TestUnitaires::lancerTestsUnitaires() != 0) {
         std::cerr << "Tests unitaires échoués. Arrêt du programme principal." << std::endl;
         return 1;

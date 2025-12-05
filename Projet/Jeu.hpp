@@ -14,6 +14,7 @@ class JeuDeLaVie {
     private : 
         Grille* grille;
         vector<ObservateurGrille*> observateurs;
+        string nomFichierSortie;
         
     public :
         JeuDeLaVie(const string& nomFichierConfig);
@@ -25,6 +26,8 @@ class JeuDeLaVie {
         GridData lireConfiguration(const string& nomFichier);
 
         void lancer(int generations);
+
+        void sauvegarderGrille(const Grille& grille,int generation) const;
 };
 
 #endif

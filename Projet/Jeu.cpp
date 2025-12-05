@@ -1,17 +1,23 @@
 #include "Jeu.hpp"
 #include "Grille.hpp"
 #include "ReglesJeu.hpp"
+#include "EtatObstacleVivant.hpp"
+#include "EtatObstacleMort.hpp"
+
 #include <iostream>
 #include <fstream>
+#include <sstream> // NÉCESSAIRE pour construire le nom de fichier de sortie
+#include <filesystem>   // NÉCESSAIRE pour créer le dossier
 #include <vector> // Nécessaire pour GridData
+
 using namespace std;
 using GridData = vector<vector<int>>;
 
-// ... (lireConfiguration, JeuDeLaVie::JeuDeLaVie, JeuDeLaVie::~JeuDeLaVie, JeuDeLaVie::ajouterObservateur inchangés)
 
 GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { /* ... (inchangé) ... */
     GridData configuration; 
     ifstream fichier(nomFichier);
+    std::cerr << "Tente d'ouvrir le fichier : [" << nomFichier << "]" << std::endl;
     if (!fichier.is_open()) {   
     throw runtime_error("Impossible d'ouvrir le fichier de configuration : " + nomFichier);
     }
@@ -59,6 +65,8 @@ JeuDeLaVie::JeuDeLaVie(const string& nomFichierConfig) {
 
     // Étape 4 : INITIALISER les Cellules
     this->grille->init(config);
+
+    this->nomFichierSortie = nomFichierConfig + "_out";
 }
 
 JeuDeLaVie::~JeuDeLaVie() {
@@ -79,17 +87,18 @@ void JeuDeLaVie::lancer(int generations) {
     cout << "Demarrage du Jeu de la Vie de Conway pour " << generations << " generations.\n";
 
     for (int i = 0; i<generations; i++) {
-        // Correction de l'affichage de la génération
         cout << "\n--- Generation " << i + 1 << "---" << endl; 
 
-        // 1. Notifier les observateurs de l'état actuel (AVANT l'évolution)
+        // Afficher les observateurs de l'état actuel (AVANT l'évolution)
         for (ObservateurGrille* obs : observateurs) {
             obs->notifierChangement(*grille);
         }
 
-        // 2. Faire évoluer la grille
-        // REMPLACEMENT de la ligne incorrecte 'Grille* Grille::calculerProchaineGeneration(Grille&);'
+        //  Faire évoluer la grille
         grille->evoluer();
+
+        // Sauvegarder l'état affiché
+        sauvegarderGrille(*grille, i + 1);
         
     }
     
@@ -98,4 +107,64 @@ void JeuDeLaVie::lancer(int generations) {
     for (ObservateurGrille* obs : observateurs) {
         obs->notifierChangement(*grille);
     }
+}
+
+
+
+
+void JeuDeLaVie::sauvegarderGrille(const Grille& grille, int generation) const {
+    
+    // 1. Définir le chemin du dossier
+    filesystem::path dir_path = this->nomFichierSortie;
+
+    // 2. VÉRIFICATION CRITIQUE : Creer le dossier s'il n'existe pas
+    try {
+        if (!filesystem::exists(dir_path)) {
+            // Cree le dossier et tous les dossiers parents si necessaire
+            filesystem::create_directories(dir_path);
+        }
+    } catch (const filesystem::filesystem_error& e) {
+        cerr << "Erreur systeme lors de la creation du dossier [" << dir_path.string() << "]: " << e.what() << endl;
+        return; 
+    }
+    
+    // 3. Creer le nom du fichier a l'interieur du dossier (ex: dossier/gen1.txt)
+    stringstream ss;
+    ss << "gen" << generation << ".txt";
+    filesystem::path file_name = ss.str();
+    
+    // Chemin complet pour ofstream
+    filesystem::path full_path = dir_path / file_name;
+
+    ofstream fichier(full_path.string()); // Utilise .string() pour eviter les ambiguites avec ofstream
+    
+    if (!fichier.is_open()) {
+        std::cerr << "Erreur: Impossible d'ouvrir le fichier de sauvegarde: " << full_path.string() << std::endl;
+        return;
+    }
+
+    // ... (Logique d'ecriture de la grille - Inchangee) ...
+    for (int y = 0; y < grille.getHauteur(); ++y) {
+        for (int x = 0; x < grille.getLongueur(); ++x) {
+            Cellule* cell = grille.getCellule(x, y);
+            
+            if (cell->estObstacle()) {
+                if (cell->estVivante()) {
+                    fichier << "2"; 
+                } else {
+                    fichier << "3"; 
+                }
+            } else {
+                if (cell->estVivante()) {
+                    fichier << "1"; 
+                } else {
+                    fichier << "0"; 
+                }
+            }
+        }
+        fichier << "\n"; 
+    }
+
+    fichier.close();
+    cout << "Sauvegarde de la generation " << generation << " dans [" << nomFichierSortie << "]" << endl;
 }
