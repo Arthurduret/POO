@@ -14,7 +14,7 @@ using namespace std;
 using GridData = vector<vector<int>>;
 
 
-GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { /* ... (inchangé) ... */
+GridData JeuDeLaVie::lireConfiguration(const string& nomFichier) { 
     GridData configuration; 
     ifstream fichier(nomFichier);
     std::cerr << "Tente d'ouvrir le fichier : [" << nomFichier << "]" << std::endl;
@@ -57,13 +57,13 @@ JeuDeLaVie::JeuDeLaVie(const string& nomFichierConfig) {
         throw runtime_error("Le fichier de configuration est vide.");
     }
 
-    // Étape 2 : Calculer la hauteur et la longueur
+    // Calculer la hauteur et la longueur
     int hauteur = (int)config.size();         
     int longueur = (int)config[0].size(); 
 
     this->grille = new Grille(longueur, hauteur); 
 
-    // Étape 4 : INITIALISER les Cellules
+    // INITIALISER les Cellules
     this->grille->init(config);
 
     this->nomFichierSortie = nomFichierConfig + "_out";
@@ -114,21 +114,14 @@ void JeuDeLaVie::lancer(int generations) {
 
 void JeuDeLaVie::sauvegarderGrille(const Grille& grille, int generation) const {
     
-    // 1. Définir le chemin du dossier
+    // Définir le chemin du dossier
     filesystem::path dir_path = this->nomFichierSortie;
 
-    // 2. VÉRIFICATION CRITIQUE : Creer le dossier s'il n'existe pas
-    try {
-        if (!filesystem::exists(dir_path)) {
-            // Cree le dossier et tous les dossiers parents si necessaire
-            filesystem::create_directories(dir_path);
-        }
-    } catch (const filesystem::filesystem_error& e) {
-        cerr << "Erreur systeme lors de la creation du dossier [" << dir_path.string() << "]: " << e.what() << endl;
-        return; 
-    }
+    // Creer le dossier
+    filesystem::create_directories(dir_path);
+        
     
-    // 3. Creer le nom du fichier a l'interieur du dossier (ex: dossier/gen1.txt)
+    // Creer le nom du fichier a l'interieur du dossier (ex: dossier/gen1.txt)
     stringstream ss;
     ss << "gen" << generation << ".txt";
     filesystem::path file_name = ss.str();
@@ -138,12 +131,12 @@ void JeuDeLaVie::sauvegarderGrille(const Grille& grille, int generation) const {
 
     ofstream fichier(full_path.string()); // Utilise .string() pour eviter les ambiguites avec ofstream
     
+    // on teste si le fichier car il y avait une erreur et donc on rajoute dans le main un ignore
     if (!fichier.is_open()) {
         std::cerr << "Erreur: Impossible d'ouvrir le fichier de sauvegarde: " << full_path.string() << std::endl;
         return;
     }
 
-    // ... (Logique d'ecriture de la grille - Inchangee) ...
     for (int y = 0; y < grille.getHauteur(); ++y) {
         for (int x = 0; x < grille.getLongueur(); ++x) {
             Cellule* cell = grille.getCellule(x, y);
