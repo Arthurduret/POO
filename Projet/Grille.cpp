@@ -134,28 +134,3 @@ void Grille::evoluer() {
         }
     }
 }
-
-void Grille::afficherGrille() const {
-    std::cout << "--- Affichage de la Grille ---" << std::endl;
-    for (int y = 0; y < hauteur; y++) {
-        for (int x = 0; x < longueur; x++) {
-            Cellule* cell = getCellule(x, y);
-
-            if (cell && cell->estObstacle()) {
-                if (cell->estVivante()) {
-                    cout << "X";
-                }
-                else {
-                    cout << "0";
-                }
-            }
-            else if (cell && cell->estVivante()) {
-                cout << "■";
-            }
-            else {
-                cout << "□";
-            }
-        }
-        cout << endl;
-    }
-}
