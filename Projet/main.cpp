@@ -1,10 +1,18 @@
 #include "Jeu.hpp"
 #include "VueGraphique.hpp"
 #include "VueConsole.hpp"
+#include "TestsUnitaires.hpp"
 #include <iostream>
 #include <string>
 
 int main() {
+
+    if (TestUnitaires::lancerTestsUnitaires() != 0) {
+        std::cerr << "Tests unitaires échoués. Arrêt du programme principal." << std::endl;
+        return 1;
+    }
+
+    
     try {
         std::string configFile;
         int iterations = 0;

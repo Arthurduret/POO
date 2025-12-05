@@ -1,4 +1,4 @@
-# Utilisation de g++ car clang++ n'est pas trouvé
+# Utilisation de g++ 
 CXX = g++
 
 # Options de compilation
