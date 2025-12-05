@@ -8,6 +8,11 @@
 class Grille;
 
 class VueGraphique : public ObservateurGrille {
+    private:
+        std::unique_ptr<sf::RenderWindow> window;
+        float cellSize;
+        float delai;
+        
     public:
         VueGraphique(unsigned int width, unsigned int height, float cellSize = 10.f);
         ~VueGraphique() override = default;
@@ -23,10 +28,7 @@ class VueGraphique : public ObservateurGrille {
         void setDelai(float d) { delai = d; }
         float getDelai() const { return delai; }
 
-    private:
-        std::unique_ptr<sf::RenderWindow> window;
-        float cellSize;
-        float delai;
+
 };
 
 #endif

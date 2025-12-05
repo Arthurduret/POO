@@ -9,9 +9,10 @@ EtatCellule* Cellule::getEtat() const {
 }
 
 void Cellule::setEtat(EtatCellule* new_etat) {
-    delete etat_actuel;
-    
-    etat_actuel = new_etat;
+        if (new_etat != etat_actuel) { 
+        delete etat_actuel;
+        etat_actuel = new_etat;
+    }
 }
 
 bool Cellule::estVivante() const {

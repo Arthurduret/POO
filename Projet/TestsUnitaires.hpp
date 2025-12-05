@@ -10,9 +10,11 @@ class TestUnitaires {
 private:
     static bool comparerGrille(const Grille& grille, const GridData& attendu);
 
+    static void afficherEtatGrille(const Grille& grille, const std::string& titre);
+    
     static bool testEvolutionBlinker();
 
-    static void afficherEtatGrille(const Grille& grille, const std::string& titre);
+    static bool testCompterVoisinsVivants();
 
 public:
     static int lancerTestsUnitaires();

@@ -38,6 +38,10 @@ public:
     // Accesseurs
     int getLongueur() const;
     int getHauteur() const;
+
+    // Verifier etat stable
+    std::string getSnapshot() const; 
+    
 };
 
 #endif

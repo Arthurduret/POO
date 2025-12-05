@@ -96,16 +96,66 @@ bool TestUnitaires::testEvolutionBlinker() {
 }
 
 
+
+bool TestUnitaires::testCompterVoisinsVivants() {
+    std::cout << "\n[TEST] Lancement du Test Unitaire: Compte des Voisins " << std::endl;
+
+    // Grille 3x3 simple pour les tests
+    GridData grille_test = {
+        {1, 1, 1},
+        {1, 0, 1},
+        {1, 1, 1}
+    };
+    
+    // Initialisation
+    std::unique_ptr<Grille> grille_ptr = std::make_unique<Grille>(3, 3);
+    grille_ptr->init(grille_test); 
+
+    afficherEtatGrille(*grille_ptr, "CONFIGURATION DE LA GRILLE TESTEE (3x3)");
+
+    bool reussite = true;
+    int resultat_reel;
+    int attendu;
+
+    attendu = 8;
+    resultat_reel = grille_ptr->getVoisinsVivants(1, 1);
+    
+    std::cerr <<"Nombre de voisins trouvés : " << resultat_reel << ". Nombre de voisins attendus : " << attendu << std::endl;
+
+    if (resultat_reel != attendu) {
+        std::cerr << " ECHEC Voisinage. Attendu: " << attendu << ", Reel: " << resultat_reel << std::endl;
+        reussite = false;
+    } else {
+        std::cout << " Reussite Voisinage." << std::endl;
+    }
+
+    return reussite;
+}
+
+
 int TestUnitaires::lancerTestsUnitaires() {
     std::cout << " LANCEMENT DES TESTS UNITAIRES " << std::endl;
 
-    bool result = testEvolutionBlinker();
+    int total_tests = 0;
+    int tests_echoues = 0;
+
+    // Executer les tests
+    if (!testCompterVoisinsVivants()) {
+        tests_echoues++;
+    }
+    total_tests++;
+
+    if (!testEvolutionBlinker()) {
+        tests_echoues++;
+    }
+    total_tests++;
+
     
-    if (result) {
-        std::cout << "RESUME : TOUS LES TESTS SONT PASSES." << std::endl;
+    if (tests_echoues == 0) {
+        std::cout << " RESUME : TOUS LES " << total_tests << " TESTS SONT PASSES." << std::endl;
         return 0;
     } else {
-        std::cerr << "RESUME : UN OU PLUSIEURS TESTS ONT ECHOUE." << std::endl;
+        std::cerr << " RESUME : " << tests_echoues << "/" << total_tests << " TESTS ONT ECHOUE." << std::endl;
         return 1;
     }
 }

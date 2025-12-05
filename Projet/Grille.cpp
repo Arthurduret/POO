@@ -10,6 +10,7 @@
 #include <vector>
 #include <memory> // AJOUTÉ : Nécessaire pour std::unique_ptr et std::make_unique
 #include <utility> // AJOUTÉ : Nécessaire pour std::move
+#include <sstream> // NÉCESSAIRE pour construire la chaîne de l'etat stable
 
 using namespace std;
 
@@ -134,3 +135,24 @@ void Grille::evoluer() {
         }
     }
 }
+<<<<<<< HEAD
+=======
+
+string Grille::getSnapshot() const {
+    stringstream ss;
+
+    for (int y = 0; y < hauteur; ++y) {
+        for (int x = 0; x < longueur; ++x) {
+            Cellule* cell = getCellule(x, y);
+            
+            // Utilise les memes valeurs que la sauvegarde (0, 1, 2, 3) pour l'unicité
+            if (cell->estObstacle()) {
+                ss << (cell->estVivante() ? '2' : '3');
+            } else {
+                ss << (cell->estVivante() ? '1' : '0');
+            }
+        }
+    }
+    return ss.str();
+}
+

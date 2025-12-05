@@ -5,6 +5,8 @@
 #include "ObservateurGrille.hpp"
 #include <vector>
 #include <string>
+#include <algorithm> // NÉCESSAIRE pour std::find
+
 using namespace std;
 using GridData = vector<vector<int>>;
 
@@ -15,6 +17,9 @@ class JeuDeLaVie {
         Grille* grille;
         vector<ObservateurGrille*> observateurs;
         string nomFichierSortie;
+
+        std::vector<std::string> historiqueEtats; 
+        const size_t maxHistorySize = 10;
         
     public :
         JeuDeLaVie(const string& nomFichierConfig);
