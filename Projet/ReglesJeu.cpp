@@ -24,4 +24,7 @@ EtatCellule* ReglesJeu::appliquerRegles(EtatCellule* etat_actuel, int voisines_v
             return etat_actuel; 
         }
     }
-};
+
+    // Par sécurité, retourner l'état courant si aucun cas précédent n'a retourné.
+    return etat_actuel;
+}
