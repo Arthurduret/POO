@@ -135,8 +135,6 @@ void Grille::evoluer() {
         }
     }
 }
-<<<<<<< HEAD
-=======
 
 string Grille::getSnapshot() const {
     stringstream ss;
