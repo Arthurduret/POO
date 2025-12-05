@@ -5,6 +5,9 @@
 #include <thread>
 
 class VueConsole : public ObservateurGrille {
+    private:
+        float delai;
+
     public :
         VueConsole() : delai(0.5f) {}
 
@@ -12,13 +15,5 @@ class VueConsole : public ObservateurGrille {
 
         void setDelai(float d) { delai = d; }
         float getDelai() const { return delai; }
-
-    private:
-        float delai;
 };
-
-
-
-
-
 #endif
