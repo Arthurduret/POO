@@ -17,3 +17,7 @@ void Cellule::setEtat(EtatCellule* new_etat) {
 bool Cellule::estVivante() const {
     return this->etat_actuel->estVivante();
 }
+
+bool Cellule::estObstacle() const {
+    return this->etat_actuel->estObstacle();
+}

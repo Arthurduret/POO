@@ -5,6 +5,11 @@
 
 
 EtatCellule* ReglesJeu::appliquerRegles(EtatCellule* etat_actuel, int voisines_vivantes) {
+    
+    if (etat_actuel->estObstacle()) {
+        return etat_actuel; 
+    }
+
     if (etat_actuel -> estVivante() == true) { 
 
         if (voisines_vivantes == 2 || voisines_vivantes == 3) {
@@ -19,4 +24,4 @@ EtatCellule* ReglesJeu::appliquerRegles(EtatCellule* etat_actuel, int voisines_v
             return etat_actuel; 
         }
     }
-}
+};

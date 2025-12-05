@@ -17,6 +17,8 @@ public:
     void setEtat(EtatCellule* new_etat);
     
     bool estVivante() const;
+
+    bool estObstacle()const;
 };
 
 #endif 

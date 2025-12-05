@@ -6,7 +6,7 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -I.
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 # Fichiers source du projet
-SRCS = ReglesJeu.cpp EtatMorte.cpp EtatVivante.cpp Jeu.cpp Grille.cpp Cellule.cpp main.cpp VueGraphique.cpp VueConsole.cpp
+SRCS = ReglesJeu.cpp EtatMorte.cpp EtatVivante.cpp EtatObstacle.cpp Jeu.cpp Grille.cpp Cellule.cpp main.cpp VueGraphique.cpp VueConsole.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = jeu_vie
 

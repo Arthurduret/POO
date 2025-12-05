@@ -66,14 +66,39 @@ void VueGraphique::draw(const Grille& grille) {
 
     // Parcours de la grille
     for (int y = 0; y < grille.getHauteur(); ++y) {
-        for (int x = 0; x < grille.getLongueur() ++x) {
-            // NOTE : ici on utilise ->estVivante() en supposant que getCellule retourne un pointeur.
-            // Si getCellule retourne une référence (Cellule&), remplacez "->" par "."
-            if (grille.getCellule(static_cast<size_t>(x), static_cast<size_t>(y)).estVivante()) {
+        // CORRECTION DE LA SYNTAXE DANS LA BOUCLE FOR
+        for (int x = 0; x < grille.getLongueur(); ++x) {
+            
+            // On récupère la Cellule* (pointeur)
+            Cellule* cell = grille.getCellule(x, y); 
+            if (!cell) continue; // Sécurité
+
+            sf::Color fillColor;
+            bool shouldDraw = false;
+
+            if (cell->estObstacle()) {
+                shouldDraw = true;
+                if (cell->estVivante()) {
+                    // Obstacle Vivant : Rouge (comme le 'X' dans la console)
+                    fillColor = sf::Color::Red; 
+                } else {
+                    // Obstacle Mort : Gris foncé (comme le '0' dans la console)
+                    fillColor = sf::Color(100, 100, 100); 
+                }
+            } 
+            else if (cell->estVivante()) {
+                shouldDraw = true;
+                // Cellule Standard Vivante : Noir
+                fillColor = sf::Color::Black;
+            } 
+            // Si la cellule est Standard ET Morte, elle reste blanche (couleur du clear),
+            // donc nous n'avons pas besoin de la dessiner.
+
+            if (shouldDraw) {
                 sf::RectangleShape cellShape;
                 cellShape.setSize(sf::Vector2f(cellSize, cellSize));
                 cellShape.setPosition(x * cellSize, y * cellSize);
-                cellShape.setFillColor(sf::Color::Black);
+                cellShape.setFillColor(fillColor);
                 window->draw(cellShape);
             }
         }

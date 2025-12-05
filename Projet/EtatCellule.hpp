@@ -8,6 +8,8 @@ class EtatCellule {
         EtatCellule() {} 
     
         virtual bool estVivante() const = 0; 
+
+        virtual bool estObstacle() const = 0;
     
         virtual ~EtatCellule() = default;
 };

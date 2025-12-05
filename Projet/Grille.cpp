@@ -2,6 +2,7 @@
 #include "Cellule.hpp"
 #include "EtatVivante.hpp"
 #include "EtatMorte.hpp"
+#include "EtatObstacle.hpp"
 #include "ReglesJeu.hpp" 
 #include <iostream>
 #include <stdexcept>
@@ -11,42 +12,53 @@
 
 using namespace std;
 
-// Constructeur : initialise la grille avec des cellules par défaut
+const int OBSTACLE_VIVANT = 2;
+const int OBSTACLE_MORT = 3;
+
+
 Grille::Grille(int longueur, int hauteur): longueur(longueur), hauteur(hauteur) {}
 
-// Accesseurs dimensionnels
 int Grille::getLongueur() const { return longueur; }
 int Grille::getHauteur() const { return hauteur; }
 
 void Grille::init(const GridData& donnees) {
     if (donnees.empty() || donnees[0].empty()) {
         throw std::runtime_error("Configuration de grille invalide.");
-    }
-    
+        }
+
     int hauteur_config = (int)donnees.size();
     int longueur_config = (int)donnees[0].size(); 
 
     cellules.resize(hauteur_config);
-    
+
     for (int y = 0; y < hauteur_config; ++y) {
         cellules[y].reserve(longueur_config); 
         for (int x = 0; x < longueur_config; ++x) {
             // Utilisation de std::make_unique pour allouer la Cellule
             CellPtr nouvelle_cellule = make_unique<Cellule>();
             EtatCellule* nouvel_etat = nullptr;
-            
-            // Choisir l'état initial
-            if (donnees[y][x] == 1) {
-                nouvel_etat = new EtatVivante();
+
+            int config_val = donnees[y][x];
+
+            // CHOISIR L'ÉTAT INITIAL EN INCLUANT LES OBSTACLES 
+            if (config_val == 1) { 
+                nouvel_etat = new EtatVivante(); // Cellule Vivante 
+            } else if (config_val == 0) {
+                nouvel_etat = new EtatMorte();   // Cellule Morte 
+            } else if (config_val == OBSTACLE_VIVANT) { //  Obstacle Vivant
+                nouvel_etat = new EtatObstacle(true);
+            } else if (config_val == OBSTACLE_MORT) { //  Obstacle Mort
+                nouvel_etat = new EtatObstacle(false);
             } else {
+                // Valeur inconnue
                 nouvel_etat = new EtatMorte();
             }
-            
+
             if (nouvel_etat != nullptr) {
                 nouvelle_cellule->setEtat(nouvel_etat);
             }
-            
-            // Ajouter et transférer la propriété (std::move)
+
+        // Ajouter et transférer la propriété (std::move)
             cellules[y].push_back(std::move(nouvelle_cellule));
         }
     }
@@ -92,7 +104,7 @@ void Grille::evoluer() {
     if (cellules.empty()) return;
 
     ReglesJeu regles;
-    std::vector<std::vector<EtatCellule*>> prochainsEtats(hauteur, std::vector<EtatCellule*>(longueur));
+    vector<vector<EtatCellule*>> prochainsEtats(hauteur, vector<EtatCellule*>(longueur));
     
     // 1. Calculer les états futurs (sans modifier la grille actuelle)
     for (int y = 0; y < hauteur; ++y) {
@@ -127,13 +139,22 @@ void Grille::afficherGrille() const {
     for (int y = 0; y < hauteur; y++) {
         for (int x = 0; x < longueur; x++) {
             Cellule* cell = getCellule(x, y);
-            if (cell && cell->estVivante()) {
-                std::cout << "■";
+
+            if (cell && cell->estObstacle()) {
+                if (cell->estVivante()) {
+                    cout << "X";
+                }
+                else {
+                    cout << "0";
+                }
+            }
+            else if (cell && cell->estVivante()) {
+                cout << "■";
             }
             else {
-                std::cout << "□";
+                cout << "□";
             }
         }
-        std::cout << std::endl;
+        cout << endl;
     }
 }

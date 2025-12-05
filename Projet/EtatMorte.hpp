@@ -9,6 +9,8 @@ class EtatMorte : public EtatCellule {
 
         bool estVivante() const override; 
 
+        bool estObstacle() const override;
+
         ~EtatMorte() override = default;
 };
 
